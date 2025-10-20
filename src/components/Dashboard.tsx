@@ -66,36 +66,36 @@ export function Dashboard() {
     }
   };
 
-  const generateLearningPlan = async () => {
-    if (!profile) return;
-    setLoading(true);
+  // const generateLearningPlan = async () => {
+  //   if (!profile) return;
+  //   setLoading(true);
 
-    try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-learning-plan`;
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          incomeRange: profile.income_range,
-          financialGoals: profile.financial_goals,
-        }),
-      });
+  //   try {
+  //     const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-learning-plan`;
+  //     const response = await fetch(apiUrl, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         incomeRange: profile.income_range,
+  //         financialGoals: profile.financial_goals,
+  //       }),
+  //     });
 
-      const plan = await response.json();
-      setLearningPlan(plan);
+  //     const plan = await response.json();
+  //     setLearningPlan(plan);
 
-      await updateProfile({
-        learning_plan: [plan],
-      });
-    } catch (error) {
-      console.error('Error generating learning plan:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     await updateProfile({
+  //       learning_plan: [plan],
+  //     });
+  //   } catch (error) {
+  //     console.error('Error generating learning plan:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleLessonComplete = async () => {
     if (!selectedLesson || !user) return;
