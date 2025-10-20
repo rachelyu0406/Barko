@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { LessonViewer } from './LessonViewer';
 import { Quiz } from './Quiz';
+import { News } from './News';
 import {
   DollarSign,
   Award,
@@ -15,6 +16,8 @@ import {
   ChevronRight,
   Loader,
   Moon,
+  Newspaper,
+  GraduationCap,
 } from 'lucide-react';
 
 type LearningPlan = {
@@ -26,6 +29,13 @@ type LearningPlan = {
     difficulty: number;
     estimatedMinutes: number;
     why: string;
+    quiz?: Array<{
+      id: string;
+      question: string;
+      options: string[];
+      correctAnswer: string;
+      explanation: string;
+    }>;
   }>;
   personalizedMessage: string;
   estimatedCompletionWeeks: number;
@@ -39,12 +49,11 @@ export function Dashboard() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
   const [showSettings, setShowSettings] = useState(false);
+  const [activeTab, setActiveTab] = useState<'lessons' | 'news'>('lessons');
 
   useEffect(() => {
     if (profile?.learning_plan && Array.isArray(profile.learning_plan) && profile.learning_plan.length > 0) {
       setLearningPlan(profile.learning_plan[0]);
-    } else if (profile?.income_range && profile?.financial_goals) {
-      generateLearningPlan();
     }
   }, [profile]);
 
@@ -65,37 +74,6 @@ export function Dashboard() {
       setCompletedLessons(new Set(data.map(p => p.lesson_id)));
     }
   };
-
-  // const generateLearningPlan = async () => {
-  //   if (!profile) return;
-  //   setLoading(true);
-
-  //   try {
-  //     const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-learning-plan`;
-  //     const response = await fetch(apiUrl, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         incomeRange: profile.income_range,
-  //         financialGoals: profile.financial_goals,
-  //       }),
-  //     });
-
-  //     const plan = await response.json();
-  //     setLearningPlan(plan);
-
-  //     await updateProfile({
-  //       learning_plan: [plan],
-  //     });
-  //   } catch (error) {
-  //     console.error('Error generating learning plan:', error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleLessonComplete = async () => {
     if (!selectedLesson || !user) return;
@@ -254,6 +232,7 @@ export function Dashboard() {
           <Quiz
             lessonId={selectedLesson.id}
             lessonTitle={selectedLesson.title}
+            questions={selectedLesson.quiz || []}
             onComplete={handleQuizComplete}
             onBack={() => setShowQuiz(false)}
           />
@@ -329,82 +308,113 @@ export function Dashboard() {
           </div>
         </div>
 
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader className="w-8 h-8 text-emerald-400 animate-spin" />
-          </div>
-        )}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('lessons')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+              activeTab === 'lessons'
+                ? 'bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500'
+                : 'bg-[#132a4a] text-blue-300 border-2 border-blue-800/30 hover:border-emerald-500/50'
+            }`}
+          >
+            <GraduationCap className="w-5 h-5" />
+            My Lessons
+          </button>
+          <button
+            onClick={() => setActiveTab('news')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+              activeTab === 'news'
+                ? 'bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500'
+                : 'bg-[#132a4a] text-blue-300 border-2 border-blue-800/30 hover:border-emerald-500/50'
+            }`}
+          >
+            <Newspaper className="w-5 h-5" />
+            Financial News
+          </button>
+        </div>
 
-        {learningPlan && (
+        {activeTab === 'news' ? (
+          <News country={(profile as any)?.country || 'United States'} />
+        ) : (
           <>
-            <div className="bg-[#132a4a] rounded-xl p-6 mb-8 border border-blue-800/30">
-              <h2 className="text-xl font-bold text-white mb-2">Your Personalized Learning Path</h2>
-              <p className="text-blue-200 mb-4">{learningPlan.personalizedMessage}</p>
-              <div className="flex items-center gap-4 text-sm text-blue-300">
-                <span>Estimated completion: {learningPlan.estimatedCompletionWeeks} weeks</span>
-                <span>•</span>
-                <span>{learningPlan.lessons.length} lessons</span>
+            {loading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader className="w-8 h-8 text-emerald-400 animate-spin" />
               </div>
-            </div>
+            )}
 
-            <div className="space-y-4">
-              {learningPlan.lessons.map((lesson, index) => {
-                const isCompleted = completedLessons.has(lesson.id);
-                const isLocked = index > 0 && !completedLessons.has(learningPlan.lessons[index - 1].id);
-
-                return (
-                  <div
-                    key={lesson.id}
-                    className={`bg-[#132a4a] rounded-xl p-6 border border-blue-800/30 transition-all duration-200 ${
-                      isLocked ? 'opacity-60' : 'hover:border-emerald-500/50 cursor-pointer'
-                    }`}
-                    onClick={() => !isLocked && setSelectedLesson(lesson)}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
-                        isCompleted ? 'bg-emerald-500/20' : isLocked ? 'bg-blue-900/50' : 'bg-blue-700/50'
-                      }`}>
-                        {isCompleted ? (
-                          <CheckCircle className="w-6 h-6 text-emerald-400" />
-                        ) : isLocked ? (
-                          <Lock className="w-6 h-6 text-blue-400" />
-                        ) : (
-                          <span className="text-white font-bold">{index + 1}</span>
-                        )}
-                      </div>
-
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="text-lg font-bold text-white mb-1">{lesson.title}</h3>
-                            <p className="text-blue-200 text-sm mb-2">{lesson.description}</p>
-                          </div>
-                          {!isLocked && !isCompleted && (
-                            <ChevronRight className="w-5 h-5 text-emerald-400 flex-shrink-0 ml-4" />
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="text-xs font-semibold text-blue-300 bg-blue-900/50 px-2 py-1 rounded">
-                            {lesson.category}
-                          </span>
-                          <span className="text-xs text-blue-400">
-                            {lesson.estimatedMinutes} min
-                          </span>
-                          <span className="text-xs text-blue-400">
-                            Level {lesson.difficulty}
-                          </span>
-                        </div>
-
-                        {!profile?.simple_mode && (
-                          <p className="text-sm text-blue-300 italic">{lesson.why}</p>
-                        )}
-                      </div>
-                    </div>
+            {learningPlan && (
+              <>
+                <div className="bg-[#132a4a] rounded-xl p-6 mb-8 border border-blue-800/30">
+                  <h2 className="text-xl font-bold text-white mb-2">Your Personalized Learning Path</h2>
+                  <p className="text-blue-200 mb-4">{learningPlan.personalizedMessage}</p>
+                  <div className="flex items-center gap-4 text-sm text-blue-300">
+                    <span>Estimated completion: {learningPlan.estimatedCompletionWeeks} weeks</span>
+                    <span>•</span>
+                    <span>{learningPlan.lessons.length} lessons</span>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+
+                <div className="space-y-4">
+                  {learningPlan.lessons.map((lesson, index) => {
+                    const isCompleted = completedLessons.has(lesson.id);
+                    const isLocked = index > 0 && !completedLessons.has(learningPlan.lessons[index - 1].id);
+
+                    return (
+                      <div
+                        key={lesson.id}
+                        className={`bg-[#132a4a] rounded-xl p-6 border border-blue-800/30 transition-all duration-200 ${
+                          isLocked ? 'opacity-60' : 'hover:border-emerald-500/50 cursor-pointer'
+                        }`}
+                        onClick={() => !isLocked && setSelectedLesson(lesson)}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
+                            isCompleted ? 'bg-emerald-500/20' : isLocked ? 'bg-blue-900/50' : 'bg-blue-700/50'
+                          }`}>
+                            {isCompleted ? (
+                              <CheckCircle className="w-6 h-6 text-emerald-400" />
+                            ) : isLocked ? (
+                              <Lock className="w-6 h-6 text-blue-400" />
+                            ) : (
+                              <span className="text-white font-bold">{index + 1}</span>
+                            )}
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h3 className="text-lg font-bold text-white mb-1">{lesson.title}</h3>
+                                <p className="text-blue-200 text-sm mb-2">{lesson.description}</p>
+                              </div>
+                              {!isLocked && !isCompleted && (
+                                <ChevronRight className="w-5 h-5 text-emerald-400 flex-shrink-0 ml-4" />
+                              )}
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <span className="text-xs font-semibold text-blue-300 bg-blue-900/50 px-2 py-1 rounded">
+                                {lesson.category}
+                              </span>
+                              <span className="text-xs text-blue-400">
+                                {lesson.estimatedMinutes} min
+                              </span>
+                              <span className="text-xs text-blue-400">
+                                Level {lesson.difficulty}
+                              </span>
+                            </div>
+
+                            {!profile?.simple_mode && (
+                              <p className="text-sm text-blue-300 italic">{lesson.why}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

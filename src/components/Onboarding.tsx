@@ -18,32 +18,39 @@ export function Onboarding() {
   const [financialGoals, setFinancialGoals] = useState('');
 
   const handleComplete = async () => {
-    setLoading(true);
-    setError('');
+  setLoading(true);
+  setError('');
+  
+  try {
+    console.log('Starting lesson generation...');
+    console.log('API Key exists:', !!import.meta.env.VITE_OPENAI_API_KEY);
+    console.log('Params:', { country, language, ageGroup, incomeRange, culturalValue, financialGoals });
     
-    try {
-      // Generate personalized lessons using OpenAI
-      const learningPlan = await generatePersonalizedLessons(
-        country,
-        language,
-        ageGroup,
-        incomeRange,
-        culturalValue,
-        financialGoals
-      );
+    // Generate personalized lessons using OpenAI
+    const learningPlan = await generatePersonalizedLessons(
+      country,
+      language,
+      ageGroup,
+      incomeRange,
+      culturalValue,
+      financialGoals
+    );
 
-      // Save to user profile
-      await updateProfile({
-        income_range: incomeRange,
-        financial_goals: financialGoals,
-        learning_plan: [learningPlan],
-      });
-    } catch (err: any) {
-      console.error('Error creating learning plan:', err);
-      setError('Failed to create your personalized plan. Please try again.');
-      setLoading(false);
-    }
-  };
+    console.log('Learning plan generated:', learningPlan);
+
+    // Save to user profile
+    await updateProfile({
+      income_range: incomeRange,
+      financial_goals: financialGoals,
+      learning_plan: [learningPlan],
+    });
+  } catch (err: any) {
+    console.error('Error creating learning plan:', err);
+    console.error('Error details:', err.message, err.response?.data);
+    setError(`Failed to create your personalized plan: ${err.message}. Please try again.`);
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0A1628] via-[#0D2847] to-[#1a3a5c] flex items-center justify-center p-4">
