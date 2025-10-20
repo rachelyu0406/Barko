@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { generatePersonalizedLessons } from '../lib/openai';
-import { DollarSign, Target, TrendingUp, Globe, Users, Calendar } from 'lucide-react';
+import { Target, TrendingUp, Globe, Users, Calendar } from 'lucide-react';
 
 export function Onboarding() {
   const { updateProfile } = useAuth();
@@ -56,8 +56,8 @@ export function Onboarding() {
     <div className="min-h-screen bg-gradient-to-br from-[#0A1628] via-[#0D2847] to-[#1a3a5c] flex items-center justify-center p-4">
       <div className="bg-[#132a4a] rounded-2xl shadow-2xl p-8 w-full max-w-2xl border border-blue-800/30">
         <div className="flex items-center justify-center mb-8">
-          <div className="bg-gradient-to-br from-emerald-400 to-emerald-600 p-3 rounded-full">
-            <DollarSign className="w-8 h-8 text-white" />
+          <div className="w-20 h-20 rounded-full overflow-hidden">
+            <img src="/BarkoLogo.png" alt="Barko Logo" className="w-full h-full object-cover scale-150" />
           </div>
         </div>
 

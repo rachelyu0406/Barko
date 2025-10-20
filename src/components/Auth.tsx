@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { DollarSign } from 'lucide-react';
 
 export function Auth() {
   const [isSignUp, setIsSignUp] = useState(true);
@@ -32,10 +31,10 @@ export function Auth() {
     <div className="min-h-screen bg-gradient-to-br from-[#0A1628] via-[#0D2847] to-[#1a3a5c] flex items-center justify-center p-4">
       <div className="bg-[#132a4a] rounded-2xl shadow-2xl p-8 w-full max-w-md border border-blue-800/30">
         <div className="flex flex-col items-center mb-8">
-          <div className="bg-gradient-to-br from-emerald-400 to-emerald-600 p-4 rounded-full mb-4">
-            <DollarSign className="w-10 h-10 text-white" />
+          <div className="mb-4 w-24 h-24 rounded-full overflow-hidden">
+            <img src="/BarkoLogo.png" alt="Barko Logo" className="w-full h-full object-cover scale-150" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">FinLearn</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Barko</h1>
           <p className="text-blue-200 text-center">
             Master your financial future, one lesson at a time
           </p>

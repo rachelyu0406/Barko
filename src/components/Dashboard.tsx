@@ -5,7 +5,6 @@ import { LessonViewer } from './LessonViewer';
 import { Quiz } from './Quiz';
 import { News } from './News';
 import {
-  DollarSign,
   Award,
   Flame,
   BookOpen,
@@ -267,10 +266,10 @@ export function Dashboard() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-emerald-400 to-emerald-600 p-3 rounded-full">
-              <DollarSign className="w-8 h-8 text-white" />
+            <div className="w-14 h-14 rounded-full overflow-hidden">
+              <img src="/BarkoLogo.png" alt="Barko Logo" className="w-full h-full object-cover scale-150" />
             </div>
-            <h1 className="text-3xl font-bold text-white">FinLearn</h1>
+            <h1 className="text-3xl font-bold text-white">Barko</h1>
           </div>
           <button
             onClick={() => setShowSettings(true)}
