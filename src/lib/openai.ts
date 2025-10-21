@@ -21,6 +21,8 @@ export async function generatePersonalizedLessons(
 
   const prompt = `Create a personalized financial literacy learning plan in valid JSON format.
 
+Important: Only output the Json and nothing else
+
 User Profile:
 - Country: ${country}
 - Language: ${language}
@@ -29,14 +31,14 @@ User Profile:
 - Cultural Value: ${culturalValue}
 - Financial Goals: ${financialGoals}
 
-Generate exactly 10 lessons. Each lesson must have:
-- id: string (1-10)
+Generate exactly 5 lessons. Each lesson must have:
+- id: string (1-5)
 - title: string
 - description: string (2-3 sentences)
 - category: string (Income Management, Savings, Budgeting, Credit, Debt, Investing, Retirement, Taxes, or Real Estate)
 - difficulty: number (1-5)
 - estimatedMinutes: number (5-20)
-- content: string (200-300 words, culturally relevant to ${country})
+- content: string (100-150 words, culturally relevant to ${country})
 - why: string (1-2 sentences)
 - quiz: array of 3 questions, each with:
   - id: string
@@ -73,7 +75,7 @@ Example structure:
     }]
   }],
   "personalizedMessage": "Welcome message here",
-  "estimatedCompletionWeeks": 8
+  "estimatedCompletionWeeks": 1
 }`;
 
   try {
@@ -102,8 +104,28 @@ Example structure:
       throw new Error('No response from OpenAI');
     }
 
+
+    console.log('OpenAI response object:', response);
+    content = response.choices?.[0]?.message?.content ?? '';
+    console.log('RAW content length:', content.length);
+    console.log('RAW content preview (first 2000 chars):\n', content.slice(0, 6000));
+    console.log('RAW content around error position (if present):\n', 
+                content.slice(Math.max(0, 15000 - 100), Math.min(content.length, 15000 + 100)));
+
+
     // Remove markdown code blocks if present
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    
+    let cleaned = content.trim();
+
+    // If the model wrapped everything in quotes (stringified JSON), fix it
+    if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+    cleaned = cleaned.slice(1, -1); // remove outer quotes
+    cleaned = cleaned.replace(/\\"/g, '"'); // unescape inner quotes
+    cleaned = cleaned.replace(/\\n/g, '\n'); // unescape newlines
+    cleaned = cleaned.replace(/\\r/g, '\r'); // unescape carriage returns
+    }
+
 
     console.log('Parsing JSON response...');
     const parsed = JSON.parse(content);
